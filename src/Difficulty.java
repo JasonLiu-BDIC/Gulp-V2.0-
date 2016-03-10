@@ -33,7 +33,7 @@ public class Difficulty extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				frame.dispose();
-				PictureDrawer pd = new PictureDrawer(0);
+				new PictureDrawer(0);
 //				pd.setDif(0);
 				
 			}
@@ -43,7 +43,7 @@ public class Difficulty extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				frame.dispose();
-				PictureDrawer pd = new PictureDrawer(1);
+				new PictureDrawer(1);
 //				pd.setDif(1);
 				
 			}
@@ -53,7 +53,7 @@ public class Difficulty extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				frame.dispose();
-				PictureDrawer pd = new PictureDrawer(2);
+				new PictureDrawer(2);
 //				pd.setDif(2);
 			}
 		});

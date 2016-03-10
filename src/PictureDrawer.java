@@ -7,9 +7,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Calendar;
+import java.io.IOException;
+import java.security.KeyStore.PrivateKeyEntry;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -25,18 +28,24 @@ public class PictureDrawer extends JPanel implements Runnable, MouseListener, fu
 	private int mouseClickX;
 	private int mouseClickY;
 	private int score;
-//	private Calendar calendar;
+	private int skillCount;
 	private long time1, time2, tInterval;
-	private int difficulty = 0;
+	private int difficulty = 1;
+	private boolean scoreBuilt = false;
+	private boolean isrampage = false;
+	private boolean isTimerOn = false;
 	boolean isQuit = false;
+	private Timer timer = new Timer(true);
 
 	// Constructor
 	public PictureDrawer(int i) {
 		this.frame.setSize(1000, 600);
 		this.frame.setLocation(100, 100);
-		this.frame.setTitle("开始游戏----");
+		this.frame.setTitle("GULP----");
 		this.frame.setDefaultCloseOperation(3);
 		this.frame.setResizable(true);
+		
+		
 	
 		
 		
@@ -82,7 +91,10 @@ public class PictureDrawer extends JPanel implements Runnable, MouseListener, fu
 		}
 		
 		
-		
+		JLabel testLabel = new JLabel("CLick me");
+		testLabel.setBounds(600, 600, 50, 30);
+		setLayout(null);
+		this.add(testLabel);
 
 		Thread nThread = new Thread(this);
 		nThread.start();
@@ -156,8 +168,8 @@ public class PictureDrawer extends JPanel implements Runnable, MouseListener, fu
 
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
-		GradientPaint playerPaint = new GradientPaint(0, 0, Color.GREEN, this.getWidth(), this.getHeight(),
-				Color.black);
+		GradientPaint playerPaint = new GradientPaint(0, 0, yellowBall.getColor(), this.getWidth(), this.getHeight(),
+				yellowBall.color);
 		GradientPaint enemyPaint = new GradientPaint(0, 0, Color.PINK, this.getWidth(), this.getHeight(), Color.YELLOW);
 		GradientPaint gradientPaint = new GradientPaint(0, 0, Color.blue, this.getWidth(), this.getHeight(),
 				Color.CYAN);
@@ -176,27 +188,75 @@ public class PictureDrawer extends JPanel implements Runnable, MouseListener, fu
 			}
 			g.setFont(font);
 			g.setColor(Color.WHITE);
-			g.drawString("SCORE: " + score, 20, 550);
+			g.drawString("SCORE: " + score, 20, 510);
+			g.drawString( (3 - skillCount) + "Times left", 20, 550);
 
 			for (Enemy eachEnemy : enemies) {
 				eachEnemy.randMove();
 				g2d.setPaint(enemyPaint);
-				// g2d.setXORMode(Color.RED);
 				drawPlayer(g2d, eachEnemy);
-				// ate();
 				gameOver = isCollition(yellowBall, eachEnemy);
 			}
+//			int m;
+//			for(int i=0;i<8;i++){
+////				int m=i+1;
+//				Avoid(enemies[i],yellowBall);
+////				enemies[i].directionX=(int) (enemies[i].directionX+0.001);
+////				enemies[i].directionY=(int) (enemies[i].directionY+0.001);
+////				while( m<8){
+////				eisCollition(enemies[i], enemies[m]);
+////				m++;
+////				}
+//				for(m = 0;m < 8;m++){
+//					if(m != i)
+//						eisCollition(enemies[i], enemies[m]);
+//					else{
+//						
+//					}
+//						
+//				}
+//			}
 		} // end if
 			// g.setFont();
 		else if (gameOver == 1 && !leaderBoarding) {
+			JButton retry = new JButton("RETRY");
+			this.setLayout(null);
+			retry.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					frame.dispose();
+					new Difficulty();
+					
+				}
+			});
+//			retry.setBounds(325, 400, 100, 80);
+			this.add(retry);
 			gameOver(g2d);
-		} else if (leaderBoarding) {
-			Scores scores = new Scores();
-			scores.displayScores(g2d);
-		}
+		} 
+		else if (leaderBoarding) {
+			Scores scores = null;
+			
+			if(scoreBuilt == false){
+			try {
+					scores = new Scores();
+					scores.displayScores(g2d);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}//catch statement
+			}
+			else{
+				try {
+					scores.displayScores(g2d);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}//else if statement
 
 	}
-
+	
 	/**
 	 * draw player or enemy in panel
 	 * 
@@ -211,16 +271,27 @@ public class PictureDrawer extends JPanel implements Runnable, MouseListener, fu
 		g2d.fillOval(player.x, player.y, player.w, player.h);
 	}
 
-	// ================================================================
 
 
 	public void run() {
 		//time1 = System.currentTimeMillis();
 		while (!isQuit) {
-
+			//if timer is not activating and the plaer is in rampage state
+			if(isrampage && !isTimerOn){
+				isTimerOn = true;
+				timer.schedule(new TimerTask() {
+					
+					@Override
+					public void run() {
+						setNoralStat();
+						isTimerOn = false;
+					}
+				}, 5000);
+			}
+			
+			
+			
 			playerMoveToMouseClick(yellowBall, this); // 黄球向着鼠标点击的方向跑
-//			System.out.println(time1 / 1000 + "||" + time2 / 1000);
-
 			try {
 				Thread.sleep(5L);
 			} catch (InterruptedException e) {
@@ -238,7 +309,6 @@ public class PictureDrawer extends JPanel implements Runnable, MouseListener, fu
 	}
 
 
-	// =========================================================================
 
 	public int getMouseClickX() {
 		return this.mouseClickX;
@@ -260,9 +330,15 @@ public class PictureDrawer extends JPanel implements Runnable, MouseListener, fu
 	 * mouseClick return getX & getY location
 	 */
 	public void mouseClicked(MouseEvent e) {
+		if(e.getClickCount() == 2 && skillCount < 3){
+			yellowBall.setSpeed(yellowBall.getSpeed() + 1);
+			yellowBall.setColor(Color.white);
+			//System.out.println("Double clicked");
+			skillCount++;
+		}
 		setMouseClickX(e.getX());
 		setMouseClickY(e.getY());
-
+		isrampage = true;
 	}
 
 	public void mousePressed(MouseEvent e) {
@@ -277,6 +353,19 @@ public class PictureDrawer extends JPanel implements Runnable, MouseListener, fu
 	public void mouseExited(MouseEvent e) {
 	}
 	
+	public void setNoralStat(){
+		isrampage = false;
+		yellowBall.setColor(Color.yellow);
+		if(difficulty == 0){
+			yellowBall.setSpeed(1.8);
+		}
+		else if(difficulty == 1){
+			yellowBall.setSpeed(1.4);
+		}
+		else {
+			yellowBall.setSpeed(1.0);
+		}
+	}
 //	//set difficulty
 //	public void setDif(int d){
 //		difficulty = d;

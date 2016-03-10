@@ -29,6 +29,12 @@ public class Player {
 	public void setSpeed(Double speed) {
 		this.speed = speed;
 	}
+	public void setColor(Color color){
+		this.color = color;
+	}
+	public Color getColor() {
+		return color;
+	}
 	
 }
 
